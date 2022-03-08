@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz</title>
+</head>
+<body>
+    <p id="Border"> </p>
+    <p id="Question">{{Question}}</p>
+    <p id="Topic">{{Topic}}</p>
+    <button id="A">{{A}}</button>
+    <button id="B">{{B}}</button>
+    <button id="C">{{C}}</button>
+    <button id="D">{{D}}</button>
+    <style>
+        body {
+            background-image: url('/static/images/bg.jpg');
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-attachment: fixed;
+        }
+        #A {
+            background-color: #0bd7de;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            padding: 14px 20px;
+            margin: 8px 0;
+            position: absolute;
+            top: 37%;
+            cursor: pointer;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: solid 5px #0bd7de;
+            border-radius: 10px;
+            width: 27%;
+            height: 10%;
+        }
+        #B {
+            background-color: #0bd7de;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            padding: 14px 20px;
+            margin: 8px 0;
+            position: absolute;
+            top: 48%;
+            cursor: pointer;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: solid 5px #0bd7de;
+            border-radius: 10px;
+            width: 27%;
+            height: 10%;
+        }
+        #C {
+            background-color: #0bd7de;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            padding: 14px 20px;
+            margin: 8px 0;
+            position: absolute;
+            top: 59%;
+            cursor: pointer;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: solid 5px #0bd7de;
+            border-radius: 10px;
+            width: 27%;
+            height: 10%;
+        }
+        #D {
+            background-color: #0bd7de;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            padding: 14px 20px;
+            margin: 8px 0;
+            position: absolute;
+            top: 70%;
+            cursor: pointer;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: solid 5px #0bd7de;
+            border-radius: 10px;
+            width: 27%;
+            height: 10%;
+        }
+        #Question {
+            font-size: 18px;
+            font-family: "Open Sans", sans-serif;
+            color: black;
+            text-align: center;
+            margin: 0;
+            position: absolute;
+            top: 27%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        #Topic {
+            font-size: 16px;
+            font-family: "Open Sans", sans-serif;
+            color: black;
+            text-align: center;
+            margin: 0;
+            position: absolute;
+            top: 22%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        #Border {
+            border-radius: 20px;
+            border: 1px solid white;
+            text-align: center;
+            background:white;
+            padding: 20px 0;
+            width: 45%;
+            height: 60%;
+            margin: 0;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
+</body>
+<script>
+
+    let selectedAnswer = null;
+
+    if (screen.width <= 699) {
+        document.location = "/mobile/quiz";
+    }
+
+    let question = document.getElementById("Question");
+    let A = document.getElementById("A");
+    A.addEventListener('click', event => {
+        submit(A);
+    });
+
+    let B = document.getElementById("B");
+    B.addEventListener('click', event => {
+        submit(B);
+    });
+
+    let C = document.getElementById("C");
+    C.addEventListener('click', event => {
+        submit(C);
+    });
+
+    let D = document.getElementById("D");
+    D.addEventListener('click', event => {
+        submit(D);
+    });
+
+    function submit(btn) {
+        if (selectedAnswer != null) {
+            return;
+        }
+        let answer = btn.innerHTML;
+        let xhr = new XMLHttpRequest();
+        xhr.open("POST", "/api/v1/");
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.onload = function() {
+			let jsonResponse = JSON.parse(xhr.responseText);
+			if (jsonResponse.Status.valueOf() == "fail") {
+			    return;
+			}
+			if (jsonResponse.question_result.valueOf() == "correct") {
+			    selectedAnswer.style.backgroundColor = "#4CAF50";
+                getNextQuestion();
+			    return;
+			}
+			selectedAnswer.style.backgroundColor = "#ed7777";
+			if (A.innerHTML.valueOf() == jsonResponse.correct_answer.valueOf()) {
+			    A.style.backgroundColor = "#4CAF50";
+			}
+			if (B.innerHTML.valueOf() == jsonResponse.correct_answer.valueOf()) {
+			    B.style.backgroundColor = "#4CAF50";
+			}
+			if (C.innerHTML.valueOf() == jsonResponse.correct_answer.valueOf()) {
+			    C.style.backgroundColor = "#4CAF50";
+			}
+			if (D.innerHTML.valueOf() == jsonResponse.correct_answer.valueOf()) {
+			    D.style.backgroundColor = "#4CAF50";
+			}
+            getNextQuestion();
+        }
+        selectedAnswer = btn;
+        xhr.send(JSON.stringify({
+            "action": "quiz_answer",
+			"Answer": answer
+        }));
+    }
+
+    function resetOptions() {
+
+        A.style.backgroundColor = "#0bd7de";
+        B.style.backgroundColor = "#0bd7de";
+        C.style.backgroundColor = "#0bd7de";
+        D.style.backgroundColor = "#0bd7de";
+        selectedAnswer = null;
+
+    }
+
+    function getNextQuestion() {
+        
+        setTimeout(function () {
+            let xhr = new XMLHttpRequest();
+            xhr.open("POST", "/api/v1/");
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onload = function() {
+                let jsonResponse = JSON.parse(xhr.responseText);
+                if (jsonResponse.Status == "fail") {
+                    if (jsonResponse.fail_reason == "quiz_session_expired") {
+                        window.location.replace("/quiz/finish/");
+                        return;
+                    }
+                    alert("Uh oh! Something went wrong, returning to the dashboard!");
+                    window.location.replace("/dashboard");
+                    return;
+                }
+                question.innerHTML = jsonResponse["question"];
+                A.innerHTML = jsonResponse["A"];
+                B.innerHTML = jsonResponse["B"];
+                C.innerHTML = jsonResponse["C"];
+                D.innerHTML = jsonResponse["D"];
+                resetOptions();
+            }
+            xhr.send(JSON.stringify({
+                "action": "quiz_question"
+            }));
+        }, 1300);
+
+    }
+
+
+</script>
+</html>

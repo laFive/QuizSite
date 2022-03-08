@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSR - Users</title>
+</head>
+<body>
+    <table id="table" cellpadding="2" cellspacing="2" border="1" onclick=""><tr>
+        <th><strong>Username</strong></th>
+        <th><strong>Questions Answered</strong></th>
+        <th><strong>Questions Correct</strong></th>
+        <th><strong>Accuracy</strong></th>
+        <th><strong>Change Password</strong></th>
+        <th><strong>Delete Account</strong></th>
+      </tr>
+    </table>
+    <br>
+    <button id="btnCreate">Create User</button>
+    <a href="/admin/">
+        <button>Back</button>
+    </a>
+</body>
+<script>
+
+    let create = document.getElementById("btnCreate");
+    create.addEventListener('click', event => {
+        let username = prompt("Username for new user");
+        if (username != null && username != "") {
+            let xhr = new XMLHttpRequest();
+            xhr.open("POST", "/api/v1/");
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onload = function() {
+                let jsonResponse = JSON.parse(xhr.responseText);
+                if (jsonResponse.Status == "fail") {
+                    alert("Unable to create the user account! Does a user with that name already exist?");
+                    return;
+                }
+                alert("User created!")
+                window.location.replace("/admin/users");
+            }
+            xhr.send(JSON.stringify({
+                "action": "create_user",
+                "username": username
+            }));
+        }
+    });
+
+    var users;
+
+    function getUsers() {
+        
+        let xhr = new XMLHttpRequest();
+        xhr.open("POST", "/api/v1/");
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.onload = function() {
+            let jsonResponse = JSON.parse(xhr.responseText);
+            if (jsonResponse.Status == "fail") {
+                alert("Uh oh! Something went wrong, returning to the dashboard!");
+                window.location.replace("/dashboard");
+                return;
+            }
+            users = jsonResponse.result
+            fillTable()
+        }
+        xhr.send(JSON.stringify({
+            "action": "get_users"
+        }));
+
+    }
+
+    function fillTable() {
+        for (const user of users) {
+            var table = document.getElementById("table");
+            var row = table.insertRow(-1);
+            var cell1 = row.insertCell(0);
+            var cell2 = row.insertCell(1);
+            var cell3 = row.insertCell(2);
+            var cell4 = row.insertCell(3);
+            var cell5 = row.insertCell(4);
+            var cell6 = row.insertCell(5);
+
+            cell1.innerHTML = user.username,
+            cell2.innerHTML = user.questions,
+            cell3.innerHTML = user.correct_questions,
+            cell4.innerHTML = user.accuracy;
+            cell5.innerHTML = '<a href="'+ "#" +'">Change Password</a>';
+            cell6.innerHTML = '<a href="'+ "#" +'">Delete Account</a>';
+        }
+    }
+
+    getUsers()
+
+</script>
+</html>

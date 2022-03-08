@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz</title>
+</head>
+<body>
+    <p id="Border"> </p>
+    <p id="title">Dashboard</p>
+    <p id="greeting">Welcome {{username}}!</p>
+    <p id="question_counter">{{questions}}</p>
+    <p id="questions">Questions answered today</p>
+    <input type="submit" value="Do Quiz" id="start">
+    <input type="submit" value="View Stats" id="stats">
+    <input type="submit" value="Options" id="options">
+    <style>
+        #question_counter {
+            text-align: center;
+            color: aquamarine;
+            font-size: 110px;
+            font-family: "Open Sans", sans-serif;
+            margin: 0;
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            text-align: center;
+            transform: translate(-50%, -50%);
+        }
+        #questions {
+            text-align: center;
+            color: black;
+            font-size: 26px;
+            font-family: "Open Sans", sans-serif;
+            margin: 0;
+            position: absolute;
+            top: 51%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        #start {
+            width: 20%;
+            background-color: #4CAF50;
+            color: white;
+            padding: 14px 20px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            position: absolute;
+            top: 65%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        #stats {
+            width: 20%;
+            background-color: #4CAF50;
+            color: white;
+            padding: 14px 20px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            position: absolute;
+            top: 74%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        #options {
+            width: 20%;
+            background-color: #4CAF50;
+            color: white;
+            padding: 14px 20px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            position: absolute;
+            top: 83%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        body {
+            background-image: url('/static/images/bg.jpg');
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-attachment: fixed;
+        }
+        #title {
+            font-size: 28px;
+            font-family: "Open Sans", sans-serif;
+            color: black;
+            text-align: center;
+            margin: 0;
+            position: absolute;
+            top: 18%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        #greeting {
+            font-size: 18px;
+            font-family: "Open Sans", sans-serif;
+            color: black;
+            text-align: center;
+            margin: 0;
+            position: absolute;
+            top: 22%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        #loggedin {
+            font-size: 22px;
+            font-family: "Open Sans", sans-serif;
+            color: black;
+            text-align: center;
+            margin: 0;
+            position: absolute;
+            top: 70%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        #Border {
+            border-radius: 20px;
+            border: 1px solid white;
+            text-align: center;
+            background:#fff;
+            padding: 20px 0;
+            width: 70%;
+            height: 80%;
+            margin: 0;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
+</body>
+<script>
+	if (screen.width <= 699) {
+        document.location = "/mobile/dashboard";
+    }
+    let btn = document.getElementById("options");
+    btn.addEventListener('click', event => {
+        window.location.replace("/options/");
+    });
+	let quizBtn = document.getElementById("start");
+    quizBtn.addEventListener('click', event => {
+        window.location.replace("/quiz/");
+    });
+</script>
+</html>
