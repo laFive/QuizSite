@@ -19,9 +19,6 @@ sessions = {}
 topics = []
 quiz_sessions = {}
 
-for x in range(9999999):
-    available_session_ids.append(x)
-
 def create_user(username, password):
     user_collection.insert_one({
         "username": username,
@@ -74,6 +71,11 @@ def update_profile(profile):
             user_collection.delete_one(x)
     user_collection.insert_one(profile)
 
+def delete_profile(profile):
+    for x in user_collection.find():
+        if x["username"] == profile["username"]:
+            user_collection.delete_one(x)
+
 
 def free_sessions():
     for key in list(sessions):
@@ -112,8 +114,6 @@ def question_answer(topic, account):
 def question_answer_correct(topic, account):
     account["correct_questions"] = int(account["correct_questions"]) + 1
     account["correct_questions_" + topic] = int(account["correct_questions_" + topic]) + 1
-
-update_topics()
 
 @server.route('/api/v1/', methods=['POST'])
 def handle_api_request():
@@ -163,6 +163,42 @@ def handle_api_request():
         return {
             "Status": "success",
             "fail_reason": "none"
+        }
+    if (d["action"] == "other_change_password"):
+        if (session.account["username"] != "William"):
+            return {
+                "Status": "fail",
+                "fail_reason": "permission"
+            }
+        for x in user_collection.find():
+            if (x["username"].lower() == d["username"].lower()):
+                user_profile = x
+                user_profile["password"] = d["new_password"]
+                update_profile(user_profile)
+                return {
+                    "Status": "success",
+                    "fail_reason": "none"
+                }
+        return {
+            "Status": "fail",
+            "fail_reason": "user_not_found"
+        }
+    if (d["action"] == "delete_user"):
+        if (session.account["username"] != "William"):
+            return {
+                "Status": "fail",
+                "fail_reason": "permission"
+            }
+        for x in user_collection.find():
+            if (x["username"].lower() == d["username"].lower()):
+                delete_profile(x)
+                return {
+                    "Status": "success",
+                    "fail_reason": "none"
+                }
+        return {
+            "Status": "fail",
+            "fail_reason": "user_not_found"
         }
     if (d["action"] == "get_users"):
         if (session.account["username"] != "William"):
@@ -317,7 +353,7 @@ def admin_users():
         return redirect(url_for('dashboard'))
     return make_response(
         render_template('users.html'))
-    
+
 
 @server.route('/dashboard/')
 def dashboard():
@@ -434,15 +470,6 @@ def mobile_login():
 def wrong():
     return make_response(render_template('login_incorrect.html'))
 
-
-@server.route('/trol')
-def trol():
-    name = request.cookies.get('sessionID')
-    if (name is None):
-        return redirect(url_for('login'))
-    return 'hello'
-
-
 class user:
     def __init__(self, username, password):
         user.username = username
@@ -450,4 +477,7 @@ class user:
 
 
 if __name__ == '__main__':
+    for x in range(9999999):
+        available_session_ids.append(x)
+    update_topics()
     server.run()
