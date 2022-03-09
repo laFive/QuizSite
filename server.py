@@ -29,8 +29,6 @@ def create_user(username, password):
         "correct_questions_Cyber Security": 0
     })
 
-
-
 class Session:
     def __init__(self, account, ping_time, expire_time, auth_key):
         self.account = account
