@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSR - Topics</title>
+</head>
+<body>
+    <table id="table" cellpadding="2" cellspacing="2" border="1" onclick=""><tr>
+        <th><strong>Topic Name</strong></th>
+        <th><strong>Enabled (Click to toggle)</strong></th>
+        <th><strong>Delete Topic (Click)</strong></th>
+      </tr>
+    </table>
+    <br>
+    <button id="btnCreate">Create Topic</button>
+    <a href="/admin/">
+        <button>Back</button>
+    </a>
+</body>
+<script>
+
+    let create = document.getElementById("btnCreate");
+    create.addEventListener('click', event => {
+        let name = prompt("Name of new topic");
+        if (name != null && name != "") {
+            let xhr = new XMLHttpRequest();
+            xhr.open("POST", "/api/v1/");
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onload = function() {
+                let jsonResponse = JSON.parse(xhr.responseText);
+                if (jsonResponse.Status == "fail") {
+                    alert("Unable to create the topic! Does a topic with that name already exist?");
+                    return;
+                }
+                alert("Topic created!")
+                window.location.replace("/admin/topics");
+            }
+            xhr.send(JSON.stringify({
+                "action": "create_topic",
+                "name": name
+            }));
+        }
+    });
+
+    var topics;
+
+    function getTopics() {
+
+        let xhr = new XMLHttpRequest();
+        xhr.open("POST", "/api/v1/");
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.onload = function() {
+            let jsonResponse = JSON.parse(xhr.responseText);
+            if (jsonResponse.Status == "fail") {
+                alert("Uh oh! Something went wrong, returning to the dashboard!");
+                window.location.replace("/dashboard");
+                return;
+            }
+            topics = jsonResponse.result
+            fillTable()
+        }
+        xhr.send(JSON.stringify({
+            "action": "get_topics"
+        }));
+
+    }
+
+    function deleteTopic(topic) {
+        let isExecuted = confirm("Are you sure to delete the topic " + topic + "?");
+        if (!isExecuted) {
+            return;
+        }
+        let xhr = new XMLHttpRequest();
+        xhr.open("POST", "/api/v1/");
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.onload = function() {
+            let jsonResponse = JSON.parse(xhr.responseText);
+            if (jsonResponse.Status == "fail") {
+                alert("Unable to delete the topic!");
+                window.location.replace("/admin/topics/");
+                return;
+            }
+            alert("Topic deleted!");
+            window.location.replace("/admin/topics/");
+        }
+        xhr.send(JSON.stringify({
+            "action": "delete_topic",
+            "topic": topic
+        }));
+    }
+
+    function setEnabled(enabled, topic) {
+        if (enabled == "Enabled"){
+            enabled = "Disabled";
+        } else {
+            enabled = "Enabled";
+        }
+        let xhr = new XMLHttpRequest();
+        xhr.open("POST", "/api/v1/");
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.onload = function() {
+            let jsonResponse = JSON.parse(xhr.responseText);
+            if (jsonResponse.Status == "fail") {
+                alert("Unable to change enabled state! Does the topic still exist?");
+                window.location.replace("/admin/topics/");
+                return;
+            }
+            alert("Topic State Changed!");
+            window.location.replace("/admin/topics/");
+        }
+        xhr.send(JSON.stringify({
+            "action": "topic_set_enabled",
+            "topic": topic,
+            "enabled": enabled
+        }));
+    }
+
+    function fillTable() {
+        for (const topic of topics) {
+            var table = document.getElementById("table");
+            var row = table.insertRow(-1);
+            var cell1 = row.insertCell(0);
+            var cell2 = row.insertCell(1);
+            var cell3 = row.insertCell(2);
+
+            cell1.innerHTML = topic.name,
+            cell2.innerHTML = topic.enabled,
+            cell3.innerHTML = "Delete Topic",
+            cell2.innerHTML = '<a href="#">' + topic.enabled + '</a>';
+            cell3.innerHTML = '<a href="#">Delete Topic</a>';
+            cell2.addEventListener("click", function(){ 
+                setEnabled(topic.enabled, topic.name);
+            });
+            cell3.addEventListener("click", function(){ 
+                deleteTopic(topic.name);
+            });
+        }
+    }
+
+    getTopics()
+
+</script>
+</html>

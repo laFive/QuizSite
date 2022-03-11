@@ -29,6 +29,13 @@ def create_user(username, password):
         "correct_questions_Cyber Security": 0
     })
 
+def create_topic(name):
+    data_collection.insert_one({
+        "Type": "Topic",
+        "Name": name,
+        "Enabled": "Disabled"
+    })
+
 class Session:
     def __init__(self, account, ping_time, expire_time, auth_key):
         self.account = account
@@ -146,7 +153,7 @@ def handle_api_request():
             "fail_reason": "none"
         }
     if (d["action"] == "create_user"):
-        if (session.account["username"] != "William"):
+        if (session.account["username"] != "William" and session.account["username"] != "admin"):
             return {
                 "Status": "fail",
                 "fail_reason": "permission"
@@ -162,8 +169,25 @@ def handle_api_request():
             "Status": "success",
             "fail_reason": "none"
         }
+    if (d["action"] == "create_topic"):
+        if (session.account["username"] != "William" and session.account["username"] != "admin"):
+            return {
+                "Status": "fail",
+                "fail_reason": "permission"
+            }
+        for x in data_collection.find():
+            if (x["Type"] == "Topic" and x["Name"].lower() == d["name"].lower()):
+                return {
+                    "Status": "fail",
+                    "fail_reason": "exists"
+                }
+        create_topic(d["name"])
+        return {
+            "Status": "success",
+            "fail_reason": "none"
+        }
     if (d["action"] == "other_change_password"):
-        if (session.account["username"] != "William"):
+        if (session.account["username"] != "William" and session.account["username"] != "admin"):
             return {
                 "Status": "fail",
                 "fail_reason": "permission"
@@ -182,7 +206,7 @@ def handle_api_request():
             "fail_reason": "user_not_found"
         }
     if (d["action"] == "delete_user"):
-        if (session.account["username"] != "William"):
+        if (session.account["username"] != "William" and session.account["username"] != "admin"):
             return {
                 "Status": "fail",
                 "fail_reason": "permission"
@@ -198,8 +222,25 @@ def handle_api_request():
             "Status": "fail",
             "fail_reason": "user_not_found"
         }
+    if (d["action"] == "delete_topic"):
+        if (session.account["username"] != "William" and session.account["username"] != "admin"):
+            return {
+                "Status": "fail",
+                "fail_reason": "permission"
+            }
+        for x in data_collection.find():
+            if (x["Type"] == "Topic" and x["Name"] == d["topic"]):
+                data_collection.delete_one(x)
+                return {
+                    "Status": "success",
+                    "fail_reason": "none"
+                }
+        return {
+            "Status": "fail",
+            "fail_reason": "topic_not_found"
+        }
     if (d["action"] == "get_users"):
-        if (session.account["username"] != "William"):
+        if (session.account["username"] != "William" and session.account["username"] != "admin"):
             return {
                 "Status": "fail",
                 "fail_reason": "permission"
@@ -224,6 +265,39 @@ def handle_api_request():
             "Status": "success",
             "fail_reason": "none",
             "result": users
+        }
+    if (d["action"] == "get_topics"):
+        if (session.account["username"] != "William" and session.account["username"] != "admin"):
+            return {
+                "Status": "fail",
+                "fail_reason": "permission"
+            }
+        topics = []
+        for x in data_collection.find():
+            if x["Type"] == "Topic":
+                topics.append({
+                    "name": x["Name"],
+                    "enabled": x["Enabled"]
+                })
+        return {
+            "Status": "success",
+            "fail_reason": "none",
+            "result": topics
+        }
+    if (d["action"] == "topic_set_enabled"):
+        if (session.account["username"] != "William" and session.account["username"] != "admin"):
+            return {
+                "Status": "fail",
+                "fail_reason": "permission"
+            }
+        for x in data_collection.find():
+            if x["Type"] == "Topic" and x["Name"] == d["topic"]:
+                data_collection.delete_one(x)
+                x["Enabled"] = d["enabled"]
+                data_collection.insert_one(x)
+        return {
+            "Status": "success",
+            "fail_reason": "none"
         }
     if (d["action"] == "quiz_answer"):
         quiz_session = quiz_sessions[client_sessionID]
@@ -332,7 +406,7 @@ def admin_panel():
     session = get_session(float(client_sessionID), float(auth_key))
     if (session is None):
         return redirect(url_for('login'))
-    if (session.account["username"] != "William"):
+    if (session.account["username"] != "William" and session.account["username"] != "admin"):
         return redirect(url_for('dashboard'))
     return make_response(
         render_template('admin.html'))
@@ -347,10 +421,25 @@ def admin_users():
     session = get_session(float(client_sessionID), float(auth_key))
     if (session is None):
         return redirect(url_for('login'))
-    if (session.account["username"] != "William"):
+    if (session.account["username"] != "William" and session.account["username"] != "admin"):
         return redirect(url_for('dashboard'))
     return make_response(
         render_template('users.html'))
+
+@server.route('/admin/topics/')
+def admin_topics():
+    free_sessions()
+    client_sessionID = request.cookies.get('sessionID')
+    auth_key = request.cookies.get('key')
+    if (client_sessionID is None or auth_key is None):
+        return redirect(url_for('login'))
+    session = get_session(float(client_sessionID), float(auth_key))
+    if (session is None):
+        return redirect(url_for('login'))
+    if (session.account["username"] != "William" and session.account["username"] != "admin"):
+        return redirect(url_for('dashboard'))
+    return make_response(
+        render_template('topics.html'))
 
 
 @server.route('/dashboard/')
